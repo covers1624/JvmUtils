@@ -10,7 +10,7 @@ path = "src/lib.rs"
 [[bin]]
 name = "jvm_utils"
 path = "src/main.rs"
-required-features = ["logging", "cli"]
+required-features = ["cli"]
 
 [features]
 # No defaults
@@ -20,7 +20,7 @@ logging = ["log"]
 # Serialization
 serde = ["dep:serde"]
 # Enable the cli
-cli = ["clap", "env_logger", "serde", "serde_json"]
+cli = ["logging", "clap", "env_logger", "serde", "serde_json"]
 
 [dependencies]
 # Dependencies required for the library to operate.

@@ -1,7 +1,10 @@
 use crate::cli::Execute;
 use clap::Args;
+use jvm_utils::install::JavaInstall;
 use jvm_utils::locator::LocatorBuilder;
+use serde::{Deserialize, Serialize};
 use std::io;
+use std::path::PathBuf;
 
 #[derive(Args)]
 pub(crate) struct ListCommand {
@@ -10,8 +13,21 @@ pub(crate) struct ListCommand {
     json: bool,
 
     /// Enable pretty json output, requires --json
-    #[clap(short, long, requires = "json")]
+    #[clap(long, requires = "json")]
     pretty: bool,
+
+    // TODO, we should sort to latest version?
+    /// Only return the first result
+    #[clap(short, long)]
+    first: bool,
+
+    /// Only return the paths to the java executable
+    #[clap(short, long)]
+    path: bool,
+
+    /// Use java instead of javaw on Windows.
+    #[clap(long, requires = "path")]
+    without_javaw: bool,
 
     /// Don't search known system paths
     #[clap(long)]
@@ -55,7 +71,21 @@ impl Execute for ListCommand {
             locator.jdk_only();
         }
 
-        let located = locator.locate();
+        let mut located = locator.locate();
+        if self.first && !located.is_empty() {
+            located = vec![located.remove(0)];
+        }
+
+        if self.path {
+            self.emit_path(located)
+        } else {
+            self.emit(located)
+        }
+    }
+}
+
+impl ListCommand {
+    fn emit(self, located: Vec<JavaInstall>) -> io::Result<()> {
         if self.json {
             if self.pretty {
                 println!("{}", serde_json::to_string_pretty(&located)?)
@@ -64,9 +94,32 @@ impl Execute for ListCommand {
             }
         } else {
             for x in located {
-                let version = x.lang_version;
-                let path = x.java_home;
-                println!("Found java version {version:?} at {path:?}")
+                println!("Found java version {:?} at {:?}", x.lang_version, x.java_home)
+            }
+        }
+
+        Ok(())
+    }
+
+    fn emit_path(self, located: Vec<JavaInstall>) -> io::Result<()> {
+        #[derive(Serialize, Deserialize)]
+        struct Entry {
+            path: PathBuf,
+        }
+
+        let located: Vec<Entry> = located.into_iter()
+            .map(|e| Entry { path: JavaInstall::get_java_executable(e.java_home, self.without_javaw) })
+            .collect();
+
+        if self.json {
+            if self.pretty {
+                println!("{}", serde_json::to_string_pretty(&located)?)
+            } else {
+                println!("{}", serde_json::to_string(&located)?)
+            }
+        } else {
+            for x in located {
+                println!("{}", x.path.display())
             }
         }
 
