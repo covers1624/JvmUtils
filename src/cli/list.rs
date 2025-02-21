@@ -24,6 +24,14 @@ pub(crate) struct ListCommand {
     /// Don't search known Gradle paths
     #[clap(long)]
     without_gradle: bool,
+
+    /// Don't return any OpenJ9 JVM's
+    #[clap(long)]
+    ignore_openj9: bool,
+
+    /// Only return JVM's which contain a compiler
+    #[clap(long)]
+    jdk_only: bool,
 }
 
 impl Execute for ListCommand {
@@ -37,6 +45,14 @@ impl Execute for ListCommand {
         }
         if !self.without_gradle {
             locator.with_gradle_locator();
+        }
+
+        if self.ignore_openj9 {
+            locator.ignore_openj9();
+        }
+
+        if self.jdk_only {
+            locator.jdk_only();
         }
 
         let located = locator.locate();

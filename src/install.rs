@@ -146,11 +146,50 @@ impl OS {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum Vendor {
+    Unknown,
+    AdoptOpenJdk,
+    Corretto,
+    GraalVmCe,
+    Jetbrains,
+    Microsoft,
+    OpenJdk,
+    Temurin,
+    Zulu,
+}
+
+impl Vendor {
+    pub fn parse(vendor: &str) -> Option<Vendor> {
+        if vendor.contains("AdoptOpenJdk") || vendor.contains("AdoptOpenJDK") {
+            Some(Self::AdoptOpenJdk)
+        } else if vendor.contains("Amazon.com") {
+            Some(Self::Corretto)
+        } else if vendor.contains("Eclipse") || vendor.contains("Temurin") {
+            Some(Self::Temurin)
+        } else if vendor.contains("GraalVM Community") || vendor.contains("GraalVmCe") {
+            Some(Self::GraalVmCe)
+        } else if vendor.contains("JetBrains") {
+            Some(Self::Jetbrains)
+        } else if vendor.contains("Microsoft") {
+            Some(Self::Microsoft)
+        } else if vendor.contains("Oracle Corporation") || vendor.contains("Sun Microsystems Inc") {
+            Some(Self::OpenJdk)
+        } else if vendor.contains("Azul Systems") {
+            Some(Self::Zulu)
+        } else {
+            None
+        }
+    }
+}
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone)]
 pub struct JavaInstall {
     pub lang_version: JavaVersion,
     pub java_home: PathBuf,
+    pub known_vendor: Option<Vendor>,
     pub vendor: String,
     pub impl_name: String,
     pub impl_version: String,
@@ -175,6 +214,7 @@ impl JavaInstall {
         Some(Self {
             lang_version: JavaVersion::parse(&impl_version.as_str())?,
             java_home: install_dir.as_ref().to_path_buf(),
+            known_vendor: Vendor::parse(&vendor),
             vendor,
             impl_name: impl_name.clone(),
             impl_version,

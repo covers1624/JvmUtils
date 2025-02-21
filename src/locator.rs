@@ -108,7 +108,7 @@ fn add_install(installs: &mut Vec<JavaInstall>, props: &LocateProperties, instal
         .filter(|e| !installs.iter().any(|existing| existing.java_home.eq(&e.java_home)))
         .filter(|e| props.filter.is_none() || props.filter.eq(&Some(e.lang_version.clone())))
         .filter(|e| !props.ignore_openj9 || !e.is_openj9)
-        .filter(|e| !props.jdk_only || !e.is_jdk)
+        .filter(|e| !props.jdk_only || e.is_jdk)
         .collect();
 
     installs.extend(to_add);
