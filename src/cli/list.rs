@@ -8,6 +8,10 @@ pub(crate) struct ListCommand {
     /// Enable Json output
     #[clap(short, long)]
     json: bool,
+
+    /// Enable pretty json output, requires --json
+    #[clap(short, long, requires="json")]
+    pretty: bool,
 }
 
 impl Execute for ListCommand {
@@ -19,7 +23,11 @@ impl Execute for ListCommand {
 
         let located = locator.locate();
         if self.json {
-            println!("{}", serde_json::to_string(&located)?)
+            if self.pretty {
+                println!("{}", serde_json::to_string_pretty(&located)?)
+            } else {
+                println!("{}", serde_json::to_string(&located)?)
+            }
         } else {
             for x in located {
                 let version = x.lang_version;
