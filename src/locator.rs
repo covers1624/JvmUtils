@@ -23,39 +23,39 @@ impl LocatorBuilder {
         Default::default()
     }
 
-    pub fn use_javaw(mut self) -> Self {
+    pub fn use_javaw(&mut self) -> &mut Self {
         self.props.use_javaw = true;
         self
     }
 
-    pub fn ignore_openj9(mut self) -> Self {
+    pub fn ignore_openj9(&mut self) -> &mut Self {
         self.props.ignore_openj9 = true;
         self
     }
 
-    pub fn jdk_only(mut self) -> Self {
+    pub fn jdk_only(&mut self) -> &mut Self {
         self.props.jdk_only = true;
         self
     }
 
-    pub fn filter(mut self, version: JavaVersion) -> Self {
+    pub fn filter(&mut self, version: JavaVersion) -> &mut Self {
         self.props.filter = Some(version);
         self
     }
 
-    pub fn with_platform_locator(self) -> Self {
+    pub fn with_platform_locator(&mut self) -> &mut Self {
         self.with_locator(Box::new(PlatformJavaLocator::new()))
     }
 
-    pub fn with_gradle_locator(self) -> Self {
+    pub fn with_gradle_locator(&mut self) -> &mut Self {
         self.with_locator(Box::new(GradleJavaLocator::new()))
     }
 
-    pub fn with_intellij_locator(self) -> Self {
+    pub fn with_intellij_locator(&mut self) -> &mut Self {
         self.with_locator(Box::new(IntelliJJavaLocator::new()))
     }
 
-    pub fn with_locator(mut self, locator: Box<dyn JavaLocator>) -> Self {
+    pub fn with_locator(&mut self, locator: Box<dyn JavaLocator>) -> &mut Self {
         self.children.push(locator);
         self
     }

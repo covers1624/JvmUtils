@@ -10,16 +10,34 @@ pub(crate) struct ListCommand {
     json: bool,
 
     /// Enable pretty json output, requires --json
-    #[clap(short, long, requires="json")]
+    #[clap(short, long, requires = "json")]
     pretty: bool,
+
+    /// Don't search known system paths
+    #[clap(long)]
+    without_system: bool,
+
+    /// Don't search known Gradle paths
+    #[clap(long)]
+    without_intellij: bool,
+
+    /// Don't search known Gradle paths
+    #[clap(long)]
+    without_gradle: bool,
 }
 
 impl Execute for ListCommand {
     fn execute(self) -> io::Result<()> {
-        let locator = LocatorBuilder::new()
-            .with_platform_locator()
-            .with_intellij_locator()
-            .with_gradle_locator();
+        let mut locator = LocatorBuilder::new();
+        if !self.without_system {
+            locator.with_platform_locator();
+        }
+        if !self.without_intellij {
+            locator.with_intellij_locator();
+        }
+        if !self.without_gradle {
+            locator.with_gradle_locator();
+        }
 
         let located = locator.locate();
         if self.json {
