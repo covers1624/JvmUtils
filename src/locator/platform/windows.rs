@@ -1,10 +1,9 @@
 use crate::install::JavaInstall;
 use crate::locator::platform::PlatformJavaLocator;
 use crate::locator::{find_add_install, scan_folder, JavaLocator};
-#[cfg(feature = "logging")]
-use log::debug;
 use winreg::enums::HKEY_LOCAL_MACHINE;
 use winreg::RegKey;
+use crate::log_debug;
 
 // Oracle.
 const ORACLE: &'static [&'static str] = &[
@@ -83,16 +82,14 @@ impl JavaLocator for PlatformJavaLocator {
     fn locate(&self) -> Option<Vec<JavaInstall>> {
         let mut vec: Vec<JavaInstall> = Vec::new();
         // Search known registry keys.
-        #[cfg(feature = "logging")]
-        debug!("Searching for JVM's installed in common system registry locations.");
+        log_debug!("Searching for JVM's installed in common system registry locations.");
         scan_registry(&mut vec, ORACLE, "", "JavaHome");
         scan_registry(&mut vec, ADOPT_OPEN_JDK, "hotspot\\MSI", "Path");
         scan_registry(&mut vec, ADOPTIUM, "hotspot\\MSI", "Path");
         scan_registry(&mut vec, MICROSOFT, "hotspot\\MSI", "Path");
 
         // Try again in known paths.
-        #[cfg(feature = "logging")]
-        debug!("Searching for JVM's installed in common system locations.");
+        log_debug!("Searching for JVM's installed in common system locations.");
         for path in PATHS {
             scan_folder(&mut vec, path);
         }

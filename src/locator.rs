@@ -6,10 +6,9 @@ use crate::install::{JavaInstall, JavaVersion, Vendor};
 use crate::locator::gradle::GradleJavaLocator;
 use crate::locator::intellij::IntelliJJavaLocator;
 use crate::locator::platform::PlatformJavaLocator;
-#[cfg(feature = "logging")]
-use log::debug;
 use std::fs;
 use std::path::Path;
+use crate::log_debug;
 
 /// A modular Java locator.
 #[derive(Default)]
@@ -101,8 +100,7 @@ pub(crate) fn find_add_install(installs: &mut Vec<JavaInstall>, path: impl AsRef
     }
 
     let install = JavaInstall::parse(executable)?;
-    #[cfg(feature = "logging")]
-    debug!("Found install for {:?} at {:?}.", &install.lang_version, &install.java_home);
+    log_debug!("Found install for {:?} at {:?}.", &install.lang_version, &install.java_home);
 
     add_install(installs, Some(install));
     Some(())
@@ -121,13 +119,12 @@ pub(crate) fn list_dir(dir: impl AsRef<Path>) -> Vec<fs::DirEntry> {
         .ok()
         .into_iter()
         .flatten()
-        .filter_map(|e| e.ok())
+        .flatten()
         .collect()
 }
 
 pub(crate) fn scan_folder(vec: &mut Vec<JavaInstall>, dir: impl AsRef<Path>) {
-    #[cfg(feature = "logging")]
-    debug!("Scanning folder for JVM's: {:?}", dir.as_ref());
+    log_debug!("Scanning folder for JVM's: {:?}", dir.as_ref());
     for entry in list_dir(dir) {
         let candidate_path = entry.path();
         if !candidate_path.is_dir() {
