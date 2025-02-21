@@ -1,5 +1,5 @@
 use crate::install::JavaInstall;
-use crate::locator::{scan_folder, JavaLocator, LocateProperties};
+use crate::locator::{scan_folder, JavaLocator};
 #[cfg(feature = "logging")]
 use log::debug;
 
@@ -14,13 +14,13 @@ impl GradleJavaLocator {
 }
 
 impl JavaLocator for GradleJavaLocator {
-    fn locate(&self, props: &LocateProperties) -> Option<Vec<JavaInstall>> {
+    fn locate(&self) -> Option<Vec<JavaInstall>> {
         let dir = dirs::home_dir()?.join(".gradle/jdks");
         #[cfg(feature = "logging")]
         debug!("Searching for JVM's installed by Gradle toolchains in path: {:?}", &dir);
 
         let mut vec: Vec<JavaInstall> = Vec::new();
-        scan_folder(&mut vec, props, &dir);
+        scan_folder(&mut vec, &dir);
         Some(vec)
     }
 }

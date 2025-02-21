@@ -14,7 +14,10 @@ use std::path::Path;
 /// A modular Java locator.
 #[derive(Default)]
 pub struct LocatorBuilder {
-    props: LocateProperties,
+    use_javaw: bool,
+    ignore_openj9: bool,
+    jdk_only: bool,
+    filter: Option<JavaVersion>,
     children: Vec<Box<dyn JavaLocator>>,
 }
 
@@ -24,22 +27,22 @@ impl LocatorBuilder {
     }
 
     pub fn use_javaw(&mut self) -> &mut Self {
-        self.props.use_javaw = true;
+        self.use_javaw = true;
         self
     }
 
     pub fn ignore_openj9(&mut self) -> &mut Self {
-        self.props.ignore_openj9 = true;
+        self.ignore_openj9 = true;
         self
     }
 
     pub fn jdk_only(&mut self) -> &mut Self {
-        self.props.jdk_only = true;
+        self.jdk_only = true;
         self
     }
 
     pub fn filter(&mut self, version: &JavaVersion) -> &mut Self {
-        self.props.filter = Some(version.clone());
+        self.filter = Some(version.clone());
         self
     }
 
@@ -62,20 +65,14 @@ impl LocatorBuilder {
 
     pub fn locate(&self) -> Vec<JavaInstall> {
         let vec: Vec<JavaInstall> = self.children.iter()
-            .filter_map(|e| e.locate(&self.props))
+            .filter_map(|e| e.locate())
             .flatten()
+            .filter(|e| self.filter.is_none() || self.filter.eq(&Some(e.lang_version.clone())))
+            .filter(|e| !self.ignore_openj9 || !e.is_openj9)
+            .filter(|e| !self.jdk_only || e.is_jdk)
             .collect();
         vec
     }
-}
-
-
-#[derive(Default)]
-pub struct LocateProperties {
-    pub use_javaw: bool,
-    pub ignore_openj9: bool,
-    pub jdk_only: bool,
-    pub filter: Option<JavaVersion>,
 }
 
 /// A locator capable of finding Java installations somewhere on the system.
@@ -86,11 +83,12 @@ pub trait JavaLocator {
     ///
     /// # Returns
     /// Some containing the JVM's found, otherwise None.
-    fn locate(&self, props: &LocateProperties) -> Option<Vec<JavaInstall>>;
+    fn locate(&self) -> Option<Vec<JavaInstall>>;
 }
 
-pub(crate) fn find_add_install(installs: &mut Vec<JavaInstall>, props: &LocateProperties, path: impl AsRef<Path>) -> Option<()> {
-    let executable = JavaInstall::get_java_executable(&path, props.use_javaw);
+pub(crate) fn find_add_install(installs: &mut Vec<JavaInstall>, path: impl AsRef<Path>) -> Option<()> {
+    // Always use javaw when probing on windows, to avoid console windows being created.
+    let executable = JavaInstall::get_java_executable(&path, true);
     if !executable.exists() {
         return None;
     }
@@ -99,16 +97,13 @@ pub(crate) fn find_add_install(installs: &mut Vec<JavaInstall>, props: &LocatePr
     #[cfg(feature = "logging")]
     debug!("Found install for {:?} at {:?}.", &install.lang_version, &install.java_home);
 
-    add_install(installs, props, Some(install));
+    add_install(installs, Some(install));
     Some(())
 }
 
-fn add_install(installs: &mut Vec<JavaInstall>, props: &LocateProperties, install: Option<JavaInstall>) {
+fn add_install(installs: &mut Vec<JavaInstall>, install: Option<JavaInstall>) {
     let to_add: Vec<JavaInstall> = install.into_iter()
         .filter(|e| !installs.iter().any(|existing| existing.java_home.eq(&e.java_home)))
-        .filter(|e| props.filter.is_none() || props.filter.eq(&Some(e.lang_version.clone())))
-        .filter(|e| !props.ignore_openj9 || !e.is_openj9)
-        .filter(|e| !props.jdk_only || e.is_jdk)
         .collect();
 
     installs.extend(to_add);
@@ -123,7 +118,7 @@ pub(crate) fn list_dir(dir: impl AsRef<Path>) -> Vec<fs::DirEntry> {
         .collect()
 }
 
-pub(crate) fn scan_folder(vec: &mut Vec<JavaInstall>, props: &LocateProperties, dir: impl AsRef<Path>) {
+pub(crate) fn scan_folder(vec: &mut Vec<JavaInstall>, dir: impl AsRef<Path>) {
     #[cfg(feature = "logging")]
     debug!("Scanning folder for JVM's: {:?}", dir.as_ref());
     for entry in list_dir(dir) {
@@ -131,13 +126,13 @@ pub(crate) fn scan_folder(vec: &mut Vec<JavaInstall>, props: &LocateProperties, 
         if !candidate_path.is_dir() {
             continue;
         }
-        if find_add_install(vec, props, &candidate_path).is_some() {
+        if find_add_install(vec, &candidate_path).is_some() {
             continue;
         }
 
         let inners = list_dir(candidate_path);
         if inners.len() == 1 {
-            find_add_install(vec, props, inners[0].path());
+            find_add_install(vec, inners[0].path());
         }
     }
 }

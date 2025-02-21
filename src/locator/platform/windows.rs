@@ -1,6 +1,6 @@
 use crate::install::JavaInstall;
 use crate::locator::platform::PlatformJavaLocator;
-use crate::locator::{find_add_install, scan_folder, JavaLocator, LocateProperties};
+use crate::locator::{find_add_install, scan_folder, JavaLocator};
 #[cfg(feature = "logging")]
 use log::debug;
 use winreg::enums::HKEY_LOCAL_MACHINE;
@@ -70,31 +70,31 @@ fn get_sub_keys(hklm: &RegKey, key: &str) -> Vec<String> {
     Vec::new()
 }
 
-fn scan_registry(mut vec: &mut Vec<JavaInstall>, props: &LocateProperties, keys: impl IntoIterator<Item=impl AsRef<str>>, key_suffix: &str, path_key: &str) {
+fn scan_registry(mut vec: &mut Vec<JavaInstall>, keys: impl IntoIterator<Item=impl AsRef<str>>, key_suffix: &str, path_key: &str) {
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
     keys.into_iter()
         .flat_map(|k| get_sub_keys(&hklm, k.as_ref()))
         .filter_map(|e| hklm.open_subkey(e + "\\" + key_suffix).ok())
         .filter_map(|e| e.get_value::<String, _>(path_key).ok())
-        .for_each(|e| { find_add_install(&mut vec, props, &e); });
+        .for_each(|e| { find_add_install(&mut vec, &e); });
 }
 
 impl JavaLocator for PlatformJavaLocator {
-    fn locate(&self, props: &LocateProperties) -> Option<Vec<JavaInstall>> {
+    fn locate(&self) -> Option<Vec<JavaInstall>> {
         let mut vec: Vec<JavaInstall> = Vec::new();
         // Search known registry keys.
         #[cfg(feature = "logging")]
         debug!("Searching for JVM's installed in common system registry locations.");
-        scan_registry(&mut vec, props, ORACLE, "", "JavaHome");
-        scan_registry(&mut vec, props, ADOPT_OPEN_JDK, "hotspot\\MSI", "Path");
-        scan_registry(&mut vec, props, ADOPTIUM, "hotspot\\MSI", "Path");
-        scan_registry(&mut vec, props, MICROSOFT, "hotspot\\MSI", "Path");
+        scan_registry(&mut vec, ORACLE, "", "JavaHome");
+        scan_registry(&mut vec, ADOPT_OPEN_JDK, "hotspot\\MSI", "Path");
+        scan_registry(&mut vec, ADOPTIUM, "hotspot\\MSI", "Path");
+        scan_registry(&mut vec, MICROSOFT, "hotspot\\MSI", "Path");
 
         // Try again in known paths.
         #[cfg(feature = "logging")]
         debug!("Searching for JVM's installed in common system locations.");
         for path in PATHS {
-            scan_folder(&mut vec, props, path);
+            scan_folder(&mut vec, path);
         }
 
         Some(vec)
