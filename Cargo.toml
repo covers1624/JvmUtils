@@ -31,7 +31,7 @@ tempfile = "3.17.1"
 log = { version = "0.4.25", optional = true, features = ["std"] }
 
 # Required for the cli
-clap = { version = "4.5.30", optional = true }
+clap = { version = "4.5.30", optional = true, features = ["derive"] }
 env_logger = { version = "0.11.6", optional = true }
 
 [target.'cfg(windows)'.dependencies]
