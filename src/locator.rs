@@ -38,8 +38,8 @@ impl LocatorBuilder {
         self
     }
 
-    pub fn filter(&mut self, version: JavaVersion) -> &mut Self {
-        self.props.filter = Some(version);
+    pub fn filter(&mut self, version: &JavaVersion) -> &mut Self {
+        self.props.filter = Some(version.clone());
         self
     }
 

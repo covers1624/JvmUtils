@@ -4,11 +4,14 @@ use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+#[cfg(feature = "cli")]
+use clap::ValueEnum;
 
 /// Represents a limited set of current and future java versions.
 #[repr(usize)]
 #[derive(Debug, PartialEq, Eq, Clone, TryFromPrimitive)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "cli", derive(ValueEnum))]
 pub enum JavaVersion {
     Java1_1 = 1,
     Java1_2 = 2,

@@ -1,6 +1,6 @@
 use crate::cli::Execute;
 use clap::Args;
-use jvm_utils::install::JavaInstall;
+use jvm_utils::install::{JavaInstall, JavaVersion};
 use jvm_utils::locator::LocatorBuilder;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -48,6 +48,10 @@ pub(crate) struct ListCommand {
     /// Only return JVM's which contain a compiler
     #[clap(long)]
     jdk_only: bool,
+
+    /// Only find JVM's of the specified version
+    #[clap(long)]
+    filter: Option<JavaVersion>,
 }
 
 impl Execute for ListCommand {
@@ -69,6 +73,10 @@ impl Execute for ListCommand {
 
         if self.jdk_only {
             locator.jdk_only();
+        }
+
+        if let Some(version) = &self.filter {
+            locator.filter(version);
         }
 
         let mut located = locator.locate();
