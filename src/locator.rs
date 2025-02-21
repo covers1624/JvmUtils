@@ -6,6 +6,7 @@ use crate::install::{JavaInstall, JavaVersion};
 use crate::locator::gradle::GradleJavaLocator;
 use crate::locator::intellij::IntelliJJavaLocator;
 use crate::locator::platform::PlatformJavaLocator;
+#[cfg(feature = "logging")]
 use log::debug;
 use std::fs;
 use std::path::Path;
@@ -95,6 +96,7 @@ pub(crate) fn find_add_install(installs: &mut Vec<JavaInstall>, props: &LocatePr
     }
 
     let install = JavaInstall::parse(executable)?;
+    #[cfg(feature = "logging")]
     debug!("Found install for {:?} at {:?}.", &install.lang_version, &install.java_home);
 
     add_install(installs, props, Some(install));
@@ -122,6 +124,7 @@ pub(crate) fn list_dir(dir: impl AsRef<Path>) -> Vec<fs::DirEntry> {
 }
 
 pub(crate) fn scan_folder(vec: &mut Vec<JavaInstall>, props: &LocateProperties, dir: impl AsRef<Path>) {
+    #[cfg(feature = "logging")]
     debug!("Scanning folder for JVM's: {:?}", dir.as_ref());
     for entry in list_dir(dir) {
         let candidate_path = entry.path();
