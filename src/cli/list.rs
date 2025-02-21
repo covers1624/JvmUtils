@@ -1,6 +1,6 @@
 use crate::cli::Execute;
 use clap::Args;
-use jvm_utils::install::{JavaInstall, JavaVersion};
+use jvm_utils::install::{JavaInstall, JavaVersion, Vendor};
 use jvm_utils::locator::LocatorBuilder;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -52,6 +52,10 @@ pub(crate) struct ListCommand {
     /// Only find JVM's of the specified version
     #[clap(long)]
     filter: Option<JavaVersion>,
+
+    /// Only find JVM's from a known vendor
+    #[clap(long)]
+    vendor_filter: Option<Vendor>
 }
 
 impl Execute for ListCommand {
@@ -77,6 +81,10 @@ impl Execute for ListCommand {
 
         if let Some(version) = &self.filter {
             locator.filter(version);
+        }
+
+        if let Some(vendor) = &self.vendor_filter {
+            locator.vendor_filter(vendor);
         }
 
         let mut located = locator.locate();

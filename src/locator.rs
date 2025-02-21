@@ -2,7 +2,7 @@ pub mod gradle;
 pub mod intellij;
 pub mod platform;
 
-use crate::install::{JavaInstall, JavaVersion};
+use crate::install::{JavaInstall, JavaVersion, Vendor};
 use crate::locator::gradle::GradleJavaLocator;
 use crate::locator::intellij::IntelliJJavaLocator;
 use crate::locator::platform::PlatformJavaLocator;
@@ -18,6 +18,7 @@ pub struct LocatorBuilder {
     ignore_openj9: bool,
     jdk_only: bool,
     filter: Option<JavaVersion>,
+    vendor_filter: Option<Vendor>,
     children: Vec<Box<dyn JavaLocator>>,
 }
 
@@ -46,6 +47,11 @@ impl LocatorBuilder {
         self
     }
 
+    pub fn vendor_filter(&mut self, vendor: &Vendor) -> &mut Self {
+        self.vendor_filter = Some(vendor.clone());
+        self
+    }
+
     pub fn with_platform_locator(&mut self) -> &mut Self {
         self.with_locator(Box::new(PlatformJavaLocator::new()))
     }
@@ -70,6 +76,7 @@ impl LocatorBuilder {
             .filter(|e| self.filter.is_none() || self.filter.eq(&Some(e.lang_version.clone())))
             .filter(|e| !self.ignore_openj9 || !e.is_openj9)
             .filter(|e| !self.jdk_only || e.is_jdk)
+            .filter(|e| self.vendor_filter.is_none() || self.vendor_filter.eq(&e.known_vendor))
             .collect();
         vec
     }
