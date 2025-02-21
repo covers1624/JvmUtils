@@ -22,27 +22,36 @@ enum Commands {
 }
 
 #[derive(Args)]
-struct ListArgs {}
+struct ListArgs {
+    /// Enable Json output
+    #[clap(short, long)]
+    json: bool,
+}
 
 fn main() -> io::Result<()> {
     let cli = Cli::parse();
     env_logger::Builder::from_env(Env::default().default_filter_or(if cli.verbose { "debug" } else { "info" })).init();
 
     match cli.command {
-        Commands::List(_) => list()
+        Commands::List(args) => list(args)
     }
 }
 
-fn list() -> io::Result<()> {
+fn list(args: ListArgs) -> io::Result<()> {
     let locator = LocatorBuilder::new()
         .with_platform_locator()
         .with_intellij_locator()
         .with_gradle_locator();
 
-    for x in locator.locate() {
-        let version = x.lang_version;
-        let path = x.java_home;
-        println!("Found java version {version:?} at {path:?}")
+    let located = locator.locate();
+    if args.json {
+        println!("{}", serde_json::to_string(&located)?)
+    } else {
+        for x in located {
+            let version = x.lang_version;
+            let path = x.java_home;
+            println!("Found java version {version:?} at {path:?}")
+        }
     }
 
     Ok(())

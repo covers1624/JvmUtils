@@ -17,8 +17,10 @@ required-features = ["logging", "cli"]
 default = []
 # Enable logging
 logging = ["log"]
+# Serialization
+serde = ["dep:serde"]
 # Enable the cli
-cli = ["clap", "env_logger"]
+cli = ["clap", "env_logger", "serde", "serde_json"]
 
 [dependencies]
 # Dependencies required for the library to operate.
@@ -29,10 +31,12 @@ tempfile = "3.17.1"
 
 # Optional, may be enabled if required.
 log = { version = "0.4.25", optional = true, features = ["std"] }
+serde = { version = "1.0.218", optional = true, features = ["derive"] }
 
 # Required for the cli
 clap = { version = "4.5.30", optional = true, features = ["derive"] }
 env_logger = { version = "0.11.6", optional = true }
+serde_json = { version = "1.0.139", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"

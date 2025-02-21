@@ -1,11 +1,14 @@
-use crate::extract::{extract_java_properties};
+use crate::extract::extract_java_properties;
 use num_enum::TryFromPrimitive;
 use regex::Regex;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 /// Represents a limited set of current and future java versions.
 #[repr(usize)]
 #[derive(Debug, PartialEq, Eq, Clone, TryFromPrimitive)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum JavaVersion {
     Java1_1 = 1,
     Java1_2 = 2,
@@ -76,7 +79,8 @@ impl JavaVersion {
 
 /// Represents a limited set of CPU architectures.
 #[repr(usize)]
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Architecture {
     X86 = 1,
     X86_64 = 2,
@@ -119,7 +123,8 @@ impl Architecture {
 
 /// Represents a limited set of Operating Systems.
 #[repr(usize)]
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum OS {
     Linux = 1,
     MacOS = 2,
@@ -141,6 +146,8 @@ impl OS {
     }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone)]
 pub struct JavaInstall {
     pub lang_version: JavaVersion,
     pub java_home: PathBuf,
