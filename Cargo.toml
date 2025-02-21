@@ -3,15 +3,36 @@ name = "jvm_utils"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "jvm_utils"
+path = "src/lib.rs"
+
+[[bin]]
+name = "jvm_utils"
+path = "src/main.rs"
+required-features = ["logging", "cli"]
+
 [features]
-log = ["dep:log"]
+# No defaults
+default = []
+# Enable logging
+logging = ["log"]
+# Enable the cli
+cli = ["clap", "env_logger"]
 
 [dependencies]
+# Dependencies required for the library to operate.
 dirs = "6.0.0"
-log = { version = "0.4.25", optional = true, features = ["std"] }
 num_enum = "0.7.3"
 regex = "1.11.1"
 tempfile = "3.17.1"
+
+# Optional, may be enabled if required.
+log = { version = "0.4.25", optional = true, features = ["std"] }
+
+# Required for the cli
+clap = { version = "4.5.30", optional = true }
+env_logger = { version = "0.11.6", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
