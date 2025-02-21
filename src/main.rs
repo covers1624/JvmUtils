@@ -1,7 +1,11 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use env_logger::Env;
-use jvm_utils::locator::LocatorBuilder;
+
+use crate::cli::list::ListCommand;
+use crate::cli::Execute;
 use std::io;
+
+mod cli;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -18,41 +22,20 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Lists all jvms on the system.
-    List(ListArgs)
+    List(ListCommand)
 }
 
-#[derive(Args)]
-struct ListArgs {
-    /// Enable Json output
-    #[clap(short, long)]
-    json: bool,
+impl Execute for Commands {
+    fn execute(self) -> io::Result<()> {
+        match self {
+            Commands::List(args) => args.execute()
+        }
+    }
 }
 
 fn main() -> io::Result<()> {
     let cli = Cli::parse();
     env_logger::Builder::from_env(Env::default().default_filter_or(if cli.verbose { "debug" } else { "info" })).init();
 
-    match cli.command {
-        Commands::List(args) => list(args)
-    }
-}
-
-fn list(args: ListArgs) -> io::Result<()> {
-    let locator = LocatorBuilder::new()
-        .with_platform_locator()
-        .with_intellij_locator()
-        .with_gradle_locator();
-
-    let located = locator.locate();
-    if args.json {
-        println!("{}", serde_json::to_string(&located)?)
-    } else {
-        for x in located {
-            let version = x.lang_version;
-            let path = x.java_home;
-            println!("Found java version {version:?} at {path:?}")
-        }
-    }
-
-    Ok(())
+    cli.command.execute()
 }
