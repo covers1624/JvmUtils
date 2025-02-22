@@ -6,9 +6,9 @@ use crate::install::{JavaInstall, JavaVersion, Vendor};
 use crate::locator::gradle::GradleJavaLocator;
 use crate::locator::intellij::IntelliJJavaLocator;
 use crate::locator::platform::PlatformJavaLocator;
+use crate::log_debug;
 use std::fs;
 use std::path::Path;
-use crate::log_debug;
 
 /// A modular Java locator.
 #[derive(Default)]

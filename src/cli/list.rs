@@ -55,7 +55,7 @@ pub(crate) struct ListCommand {
 
     /// Only find JVM's from a known vendor
     #[clap(long)]
-    vendor_filter: Option<Vendor>
+    vendor_filter: Option<Vendor>,
 }
 
 impl Execute for ListCommand {

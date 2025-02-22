@@ -1,8 +1,8 @@
 use std::collections::HashMap;
+use std::fs;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::process::{Command, Stdio};
-use std::fs;
 use tempfile::TempDir;
 
 const PROP_EXTRACT: &[u8] = include_bytes!("PropExtract.class");

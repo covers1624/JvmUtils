@@ -1,9 +1,9 @@
 use crate::install::JavaInstall;
 use crate::locator::platform::PlatformJavaLocator;
 use crate::locator::{find_add_install, scan_folder, JavaLocator};
+use crate::log_debug;
 use winreg::enums::HKEY_LOCAL_MACHINE;
 use winreg::RegKey;
-use crate::log_debug;
 
 // Oracle.
 const ORACLE: &'static [&'static str] = &[

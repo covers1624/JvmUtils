@@ -1,8 +1,8 @@
 use crate::install::JavaInstall;
 use crate::locator::platform::PlatformJavaLocator;
 use crate::locator::{scan_folder, JavaLocator};
-use std::path::Path;
 use crate::log_debug;
+use std::path::Path;
 
 impl JavaLocator for PlatformJavaLocator {
     fn locate(&self) -> Option<Vec<JavaInstall>> {

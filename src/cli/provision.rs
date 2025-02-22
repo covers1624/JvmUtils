@@ -1,9 +1,9 @@
 use crate::cli::Execute;
 use clap::Args;
+use jvm_utils::install::JavaVersion::Java17;
 use jvm_utils::provisioning::{adoptium, InstallationManager, ProvisionRequest};
 use std::io;
 use std::path::PathBuf;
-use jvm_utils::install::JavaVersion::Java17;
 
 #[derive(Args)]
 pub(crate) struct ProvisionCommand {
