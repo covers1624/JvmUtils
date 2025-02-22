@@ -1,15 +1,15 @@
 use crate::extract::extract_java_properties;
+#[cfg(feature = "cli")]
+use clap::ValueEnum;
 use num_enum::TryFromPrimitive;
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-#[cfg(feature = "cli")]
-use clap::ValueEnum;
 
 /// Represents a limited set of current and future java versions.
 #[repr(usize)]
-#[derive(Debug, PartialEq, Eq, Clone, TryFromPrimitive)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, TryFromPrimitive)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "cli", derive(ValueEnum))]
 pub enum JavaVersion {
@@ -78,11 +78,27 @@ impl JavaVersion {
         }
         Self::try_from(v_split[0]).ok()
     }
+
+    pub fn ordinal(self) -> usize {
+        self as usize
+    }
+
+    pub fn short_string(&self) -> String {
+        match self {
+            JavaVersion::Java1_1 => "1.1".into(),
+            JavaVersion::Java1_2 => "1.2".into(),
+            JavaVersion::Java1_3 => "1.3".into(),
+            JavaVersion::Java1_4 => "1.4".into(),
+            JavaVersion::Java1_5 => "1.5".into(),
+            JavaVersion::Java1_6 => "1.6".into(),
+            _ => self.ordinal().to_string(),
+        }
+    }
 }
 
 /// Represents a limited set of CPU architectures.
 #[repr(usize)]
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Architecture {
     X86 = 1,
@@ -126,7 +142,7 @@ impl Architecture {
 
 /// Represents a limited set of Operating Systems.
 #[repr(usize)]
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum OS {
     Linux = 1,
@@ -149,7 +165,7 @@ impl OS {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "cli", derive(ValueEnum))]
 pub enum Vendor {

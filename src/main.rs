@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use env_logger::Env;
 
 use crate::cli::list::ListCommand;
+use crate::cli::provision::ProvisionCommand;
 use crate::cli::Execute;
 use std::io;
 
@@ -22,20 +23,24 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Lists all jvms on the system.
-    List(ListCommand)
+    List(ListCommand),
+
+    /// Provision new jvms
+    Provision(ProvisionCommand),
 }
 
 impl Execute for Commands {
     fn execute(self) -> io::Result<()> {
         match self {
-            Commands::List(args) => args.execute()
+            Commands::List(args) => args.execute(),
+            Commands::Provision(args) => args.execute(),
         }
     }
 }
 
 fn main() -> io::Result<()> {
     let cli = Cli::parse();
-    env_logger::Builder::from_env(Env::default().default_filter_or(if cli.verbose { "debug" } else { "info" })).init();
+    env_logger::Builder::from_env(Env::default().default_filter_or(format!("{},rustls=off,ureq=off,ureq_proto=off", if cli.verbose { "debug" } else { "info" }))).init();
 
     cli.command.execute()
 }
