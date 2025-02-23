@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use tempfile::TempDir;
 
-const PROP_EXTRACT: &[u8] = include_bytes!("PropExtract.class");
+const PROP_EXTRACT: &[u8] = include_bytes!("extract/PropExtract.class");
 
 pub fn extract_java_properties(java_executable: impl AsRef<Path>, props: impl IntoIterator<Item=impl Into<String>>) -> Option<HashMap<String, String>> {
     let exe_path = java_executable.as_ref();
